@@ -2,6 +2,7 @@ package com.example.cosmo
 
 import android.app.Application
 import com.example.data.repository.apiModule
+import com.example.presentation.screen.bluetoothModule
 import java.util.Properties
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -15,10 +16,11 @@ class MyApp : Application() {
             properties.load(inputStream)
             properties.getProperty("base_url")
         }
+        val koinModules = listOf(apiModule, viewModelModule, bluetoothModule)
         startKoin {
             androidContext(this@MyApp)
             properties(mapOf("base_url" to baseUrl))
-            modules(apiModule,viewModelModule)
+            modules(koinModules)
         }
     }
 }

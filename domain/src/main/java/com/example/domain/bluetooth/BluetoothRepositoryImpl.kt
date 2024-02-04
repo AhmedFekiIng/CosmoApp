@@ -21,11 +21,15 @@ class BluetoothRepositoryImpl(private val context: Context) : BluetoothRepositor
         private const val BLUETOOTH_PERMISSION = Manifest.permission.BLUETOOTH_CONNECT
     }
 
-    override suspend fun discoverDevices(): List<com.example.domain.bluetooth.BluetoothDevice> {
+    override suspend fun discoverDevices(): List<DomainBluetoothDevice> {
         val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
-        val devices: MutableList<com.example.domain.bluetooth.BluetoothDevice> = mutableListOf()
+        val devices: MutableList<DomainBluetoothDevice> = mutableListOf()
 
-        if (checkSelfPermission(context, BLUETOOTH_PERMISSION) == PackageManager.PERMISSION_GRANTED) {
+        if (checkSelfPermission(
+                context,
+                BLUETOOTH_PERMISSION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
             Log.d("BluetoothRepositoryImpl", "Bluetooth permissions granted")
             bluetoothAdapter?.takeIf { it.isEnabled }?.startDiscovery()
             val receiver = object : BroadcastReceiver() {
@@ -33,9 +37,14 @@ class BluetoothRepositoryImpl(private val context: Context) : BluetoothRepositor
                     Log.d("BluetoothRepositoryImpl", "onReceive called")
                     val action: String? = intent?.action
                     if (BluetoothDevice.ACTION_FOUND == action) {
-                        val device: BluetoothDevice? = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+                        val device: BluetoothDevice? =
+                            intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
                         device?.let {
-                            val name = if (checkSelfPermission(context!!, BLUETOOTH_PERMISSION) == PackageManager.PERMISSION_GRANTED) {
+                            val name = if (checkSelfPermission(
+                                    context!!,
+                                    BLUETOOTH_PERMISSION
+                                ) == PackageManager.PERMISSION_GRANTED
+                            ) {
                                 device.name ?: "Unknown"
                             } else {
                                 "Unknown"
@@ -47,7 +56,7 @@ class BluetoothRepositoryImpl(private val context: Context) : BluetoothRepositor
                                     characteristics.add(uuid.toString())
                                 }
                             }
-                            devices.add(BluetoothDevice(name, address, characteristics))
+                            devices.add(DomainBluetoothDevice(name, address, characteristics))
                         }
                     }
                 }
@@ -64,9 +73,13 @@ class BluetoothRepositoryImpl(private val context: Context) : BluetoothRepositor
         return devices
     }
 
-    fun requestBluetoothPermission() {
+    private fun requestBluetoothPermission() {
         (context as? Activity)?.let { activity ->
-            ActivityCompat.requestPermissions(activity, arrayOf(BLUETOOTH_PERMISSION), generatePermissionRequestCode())
+            ActivityCompat.requestPermissions(
+                activity,
+                arrayOf(BLUETOOTH_PERMISSION),
+                generatePermissionRequestCode()
+            )
         }
     }
 
